@@ -1,0 +1,99 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Me = Players.LocalPlayer 
+--local Enumerate = require(ReplicatedStorage.Shared.Utils.Enumerate)
+local Logical = require(ReplicatedStorage.Shared.Utils.Logical)
+local PlayerLoaderOperation = {}
+PlayerLoaderOperation.__index = PlayerLoaderOperation
+PlayerLoaderOperation.__className = "PlayerLoaderOperation"
+
+--- CHARACTER CONSTS ---
+
+local AUDIO_DICTIONARY = {
+    ["DEFAULT"] = {
+        ["Volume"] = .05,
+        ["RollOffMaxDistance"] = 200,
+        ["RollOffMinDistance"] = 50,
+    },
+    ["Running"] = {
+        ["SoundId"] = "rbxassetid://114867999179920",
+        ["Volume"] = .05,
+        ["PlaybackSpeed"] = .8,
+        ["RollOffMaxDistance"] = "DEFAULT",
+        ["RollOffMinDistance"] = 50,
+    },
+    ["Climbing"] = {
+        ["SoundId"] = "",
+        [1] = "DEFAULT"
+    },
+    ["FreeFalling"] = {
+        ["SoundId"] = "",
+        [1] = "DEFAULT"
+    },
+    ["Died"] = {
+        ["SoundId"] = "",
+        [1] = "DEFAULT"
+    },
+    ["GettingUp"] = {
+        ["SoundId"] = "",
+        [1] = "DEFAULT"
+    },
+    ["Jumping"] = {
+        ["SoundId"] = "rbxassetid://75118626440680",
+        [1] = "DEFAULT"
+    },
+    ["Landing"] = {
+        ["SoundId"] = "",
+        [1] = "DEFAULT"
+    },
+    ["Splash"] = {
+        ["SoundId"] = "",
+        [1] = "DEFAULT"
+    },
+    ["Swimming"] ={
+        ["SoundId"] = "",
+        [1] = "DEFAULT"
+    },
+}
+
+local function applyAudioConfiguration(initValue, value, target: Instance)
+    if type(value) =="table" then
+        for i, v in pairs(value) do
+            if i == "DEFAULT" then
+                continue
+            end
+            if type(v) == "table" then
+                applyAudioConfiguration(initValue, v, target:WaitForChild(i))
+                continue
+            end
+            if v == "DEFAULT" then
+                local default = initValue["DEFAULT"];
+                if type(i) == "number" then
+                    applyAudioConfiguration(initValue, Logical.difference(value, default), target)
+                    continue
+                end
+                if default[i] ~= nil then
+                    target[i] = default[i]
+                    continue;
+                end
+                applyAudioConfiguration(default, default, target:WaitForChild(i))
+                continue
+            end
+            target[i] = v
+        end
+    end
+end
+
+local function CharacterSetCustomSounds(humanoid: Humanoid)
+    applyAudioConfiguration(AUDIO_DICTIONARY, AUDIO_DICTIONARY, humanoid.Parent:WaitForChild("HumanoidRootPart"))
+end
+
+function PlayerLoaderOperation.start()
+    Me.CharacterAdded:Connect(function(character: Model)
+        local humanoid = character:WaitForChild("Humanoid")
+        CharacterSetCustomSounds(humanoid)
+    end)
+
+end
+
+return PlayerLoaderOperation
