@@ -51,7 +51,6 @@ end
 
 local function saveData(player: Player) : boolean
     local playerData = DataService.Sessions[player.UserId]
-    print(playerData)
     if playerData == nil or playerData == false or type(playerData) ~= "table" then
         warn("Player ["..player.UserId.."] with bad temp data, skip saving")
         return true

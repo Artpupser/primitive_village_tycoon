@@ -4,6 +4,7 @@ local Me = Players.LocalPlayer
 --local Enumerate = require(ReplicatedStorage.Shared.Utils.Enumerate)
 local Logical = require(ReplicatedStorage.Shared.Utils.Logical)
 local PlayerLoaderOperation = {}
+local SoundService = game:GetService("SoundService")
 PlayerLoaderOperation.__index = PlayerLoaderOperation
 PlayerLoaderOperation.__className = "PlayerLoaderOperation"
 
@@ -23,15 +24,18 @@ local AUDIO_DICTIONARY = {
         ["RollOffMinDistance"] = 50,
     },
     ["Climbing"] = {
-        ["SoundId"] = "",
+        ["SoundId"] = "rbxassetid://114640039515382",
+        ["PlaybackSpeed"] = 1.45,
+        ["Volume"] = .2,
         [1] = "DEFAULT"
     },
     ["FreeFalling"] = {
-        ["SoundId"] = "",
+        ["SoundId"] = "rbxassetid://119669684568685",
         [1] = "DEFAULT"
     },
     ["Died"] = {
-        ["SoundId"] = "",
+        ["SoundId"] = "rbxassetid://138867344936809",
+        ["Volume"] = .2,
         [1] = "DEFAULT"
     },
     ["GettingUp"] = {
@@ -43,11 +47,13 @@ local AUDIO_DICTIONARY = {
         [1] = "DEFAULT"
     },
     ["Landing"] = {
-        ["SoundId"] = "",
+        ["SoundGroup"] = SoundService:WaitForChild("Fall"),
+        ["SoundId"] = "rbxassetid://81710345021728",
+        ["PlaybackSpeed"] = 1,
         [1] = "DEFAULT"
     },
     ["Splash"] = {
-        ["SoundId"] = "",
+        ["SoundId"] = "rbxassetid://124279162156159",
         [1] = "DEFAULT"
     },
     ["Swimming"] ={
