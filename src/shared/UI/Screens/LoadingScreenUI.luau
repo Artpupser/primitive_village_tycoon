@@ -17,7 +17,6 @@ local function RootScreenUI(props)
          if newProgress >= 1 then
             task.delay(1, function()
                local frame = frameRef.current
-               print(frame)
                local animation = TweenService:Create(frame, TweenInfo.new(.8,
                Enum.EasingStyle.Back,
                Enum.EasingDirection.In), {

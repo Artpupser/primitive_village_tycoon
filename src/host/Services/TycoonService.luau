@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local TriggerManager = require(ReplicatedStorage.Shared.Core.TriggerManager)
+local CollectionService = game:GetService("CollectionService")
 
 local TycoonService = {}
 TycoonService.__index = TycoonService
@@ -23,13 +24,14 @@ local AMOUNT = 4
 local Tycoons = {}
 
 function TycoonService.init()
-    for i = AMOUNT, 1, -1 do
-        print(i)
+    for _, v:BasePart in pairs(CollectionService:GetTagged("kill")) do
+        v.Touched:Connect(function(otherPart)
+            local humanoid = otherPart.Parent:FindFirstChild("Humanoid")
+            if humanoid ~= nil then
+                humanoid.Health = 0
+            end
+        end)
     end
-
-    TriggerManager.getPrivateEvent("player_data_success_loaded").Event:Connect(function(player: Player, data: PlayerData)
-        TriggerManager.fireRemoteEvent("notification", player, "Data with actual version '"..data.Version.."' successfuly loaded!")
-    end)
 end
 
 return TycoonService

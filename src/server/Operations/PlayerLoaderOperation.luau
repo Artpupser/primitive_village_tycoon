@@ -15,7 +15,7 @@ PlayerLoaderOperation.characterFolder = nil
 --- LOCAL CONSTS ---
 
 local CHARACTER_FOLDER_NAME = "Players"
- 
+
 local CHARACTER_PROPERTIES = {
     ["CollisionGroup"] = "Player",
     ["Material"] = Enum.Material.SmoothPlastic
@@ -31,22 +31,21 @@ local HUMANOID_PROPERTIES = {
     ["AutomaticScalingEnabled"] = false
 }
 
+
 --- ------------ ---
 
-local function CharacterMaterialChange(humanoid: Humanoid)
-    Enumerate.characterParts(humanoid, function(part)
-        part.Material = CHARACTER_PROPERTIES.Material
-    end)
+local function CharacterMaterialSetter(part:Part)
+    part.Material = CHARACTER_PROPERTIES.Material
 end
 
-local function CharcaterPutToFolder(humanoid: Humanoid)
-    humanoid.Parent.Parent = PlayerLoaderOperation.characterFolder
+local function CharacterCollisionGroupSetter(part:Part)
+    part.CollisionGroup = CHARACTER_PROPERTIES.CollisionGroup
 end
 
-local function CharacterSetCollisionGroup(humanoid: Humanoid)
-    Enumerate.characterParts(humanoid, function(part)
-        part.CollisionGroup = CHARACTER_PROPERTIES.CollisionGroup
-    end)
+
+local function CharacterCanTouchSetter(part:Part)
+    part.CanTouch = false
+    part.AudioCanCollide = false
 end
 
 local function BasicHumanoidConfiguration(humanoid: Humanoid)
@@ -55,8 +54,38 @@ local function BasicHumanoidConfiguration(humanoid: Humanoid)
     end
 end
 
+local function CharcaterPutToFolder(humanoid: Humanoid)
+    humanoid.Parent.Parent = PlayerLoaderOperation.characterFolder
+end
+
+local function CharacterFreeze(humanoid: Humanoid)
+    humanoid.Parent:WaitForChild("HumanoidRootPart").Anchored = true
+end
+
+local function CharacterModifyBodyParts(humanoid: Humanoid)
+    local root:Part = humanoid.Parent:WaitForChild("HumanoidRootPart");
+    local touchPart:Part = SimpleInstance.new("Part")
+        :rename("Touch")
+        :canTouch(true)
+        :canCollide(false)
+        :canQeury(false)
+        :audioCanCollide(false)
+        :anchored(false)
+        :transparency(1)
+        :color(Color3.new(0, 0, 0))
+        :cframe(CFrame.new(root.CFrame.X, 4.5, root.CFrame.Z - .2))
+        :size(Vector3.new(2, 6, 0.75))
+        :parent(root.Parent)
+        :build()
+    local weldConstraint:WeldConstraint = SimpleInstance.new("WeldConstraint")
+        :parent(touchPart)
+        :build()
+    weldConstraint.Part0 = root
+    weldConstraint.Part1 = touchPart
+end
 
 function PlayerLoaderOperation.start()
+
     PlayerLoaderOperation.characterFolder = SimpleInstance.new("Folder"):rename(CHARACTER_FOLDER_NAME):parent(workspace):build()
     TriggerManager.createPrivateEvent("player_added")
     TriggerManager.createPrivateEvent("player_removed")
@@ -71,10 +100,15 @@ function PlayerLoaderOperation.start()
         TriggerManager.firePrivateEvent("player_added", player)
         player.CharacterAdded:Connect(function(character: Model)
             local humanoid = character:WaitForChild("Humanoid")
-            CharacterMaterialChange(humanoid)
-            CharacterSetCollisionGroup(humanoid)
+            Enumerate.characterParts(humanoid, function(part)
+                CharacterCollisionGroupSetter(part)
+                CharacterMaterialSetter(part)
+                CharacterCanTouchSetter(part)
+            end)
             BasicHumanoidConfiguration(humanoid)
             CharcaterPutToFolder(humanoid)
+            CharacterModifyBodyParts(humanoid)
+            --CharacterFreeze(humanoid)
         end)
     end)
 

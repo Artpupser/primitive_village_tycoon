@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Me = Players.LocalPlayer 
+local StarterGui = game:GetService("StarterGui")
 --local Enumerate = require(ReplicatedStorage.Shared.Utils.Enumerate)
 local Logical = require(ReplicatedStorage.Shared.Utils.Logical)
 local PlayerLoaderOperation = {}
@@ -9,6 +10,19 @@ PlayerLoaderOperation.__index = PlayerLoaderOperation
 PlayerLoaderOperation.__className = "PlayerLoaderOperation"
 
 --- CHARACTER CONSTS ---
+
+local HUD_PROPERTIES = {
+    [Enum.CoreGuiType.AvatarSwitcher] = false,
+    [Enum.CoreGuiType.Backpack] = false,
+    [Enum.CoreGuiType.Captures] = false,
+    [Enum.CoreGuiType.EmotesMenu] = true,
+    [Enum.CoreGuiType.ExperienceShop] = false,
+    [Enum.CoreGuiType.PlayerList] = false,
+    [Enum.CoreGuiType.SelfView] = false,
+    [Enum.CoreGuiType.Health] = false,
+    [Enum.CoreGuiType.Chat] = false,
+    --[Enum.CoreGuiType.All] = true,
+}
 
 local AUDIO_DICTIONARY = {
     ["DEFAULT"] = {
@@ -94,7 +108,14 @@ local function CharacterSetCustomSounds(humanoid: Humanoid)
     applyAudioConfiguration(AUDIO_DICTIONARY, AUDIO_DICTIONARY, humanoid.Parent:WaitForChild("HumanoidRootPart"))
 end
 
+local function RemoveNotUsedHUD()
+    for i, v in pairs(HUD_PROPERTIES) do
+        StarterGui:SetCoreGuiEnabled(i, v)
+    end
+end
+
 function PlayerLoaderOperation.start()
+    RemoveNotUsedHUD()
     Me.CharacterAdded:Connect(function(character: Model)
         local humanoid = character:WaitForChild("Humanoid")
         CharacterSetCustomSounds(humanoid)

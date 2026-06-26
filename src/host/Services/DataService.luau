@@ -61,15 +61,17 @@ local function saveData(player: Player) : boolean
     end)
 
     if success then
+        TriggerManager.fireRemoteEvent("notification", player, "Your data successfuly saved!")
         print("PlayerData ["..player.UserId.."] successfuly saved!")
         return true
     end
-    
+    TriggerManager.fireRemoteEvent("notification", player, "Failed while saving your data! Please try save game manually")
     error("Bad operation!, PlayerData ["..player.UserId.."] not saved")
     return false
 end
 
 local function initData(player: Player) : boolean
+    TriggerManager.fireRemoteEvent("notification", player, "Welcome! new player "..player.DisplayName)
     print("PlayerData ["..player.UserId.."] is nil! initializing new data, version: "..CURRENT_DATA_SCHEME.Version)
     local new = table.clone(CURRENT_DATA_SCHEME)
     session(player, new)
@@ -89,32 +91,34 @@ local function loadData(player: Player) : boolean
                 Logical.mergeRecursion(value, CURRENT_DATA_SCHEME)
                 value.Version = CURRENT_DATA_SCHEME.Version
             end
+            TriggerManager.fireRemoteEvent("notification", player, "Data with actual version '"..value.Version.."' successfuly loaded!")
             print("PlayerData ["..player.UserId.."] successfuly loaded! version "..value.Version.." is actual")
             session(player, value)
             return true
         end
         return initData(player)
     end
+    TriggerManager.fireRemoteEvent("notification", player, "Your data not loaded! Please try re-enter the game")
     error("PlayerData ["..player.UserId.."] bad loaded...")
     session(player, false)
     return false
 end
 
 
-local function set(player:Player, new: PlayerData)
+function DataService.set(player:Player, new: PlayerData)
     if session(player) ~= nil then
         DataService.Sessions[player.UserId] = new
     end
 end
 
-local function getRef(player:Player) : PlayerData
+function DataService.getRef(player:Player) : PlayerData
     local playerSession = session(player);
     if playerSession ~= nil then
         return playerSession
     end
 end
 
-local function getCopy(player:Player) : PlayerData
+function DataService.getCopy(player:Player) : PlayerData
     local playerSession = session(player);
     if  playerSession ~= nil then
         return table.clone(playerSession)
@@ -136,7 +140,7 @@ function DataService.init()
             player:Kick("Data bad loaded, try another enter to server")
             return
         end
-        TriggerManager.firePrivateEvent("player_data_success_loaded", player, getRef(player))
+        TriggerManager.firePrivateEvent("player_data_success_loaded", player, DataService.getRef(player))
     end)
     
     TriggerManager.getPrivateEvent("player_removed").Event:Connect(function(player:Player)
