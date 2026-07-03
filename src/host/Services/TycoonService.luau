@@ -46,7 +46,7 @@ function TycoonService.init()
         tycoonClone:PivotTo(tycoonClone.WorldPivot * CFrame.new(0,0,-tycoonClone.WorldPivot.Z))
         tycoonClone:PivotTo(tycoonClone.WorldPivot * CFrame.fromEulerAnglesXYZ(0,rotate,0))
         local tycoonProvider = TycoonProvider.new(TycoonModel.new(tycoonClone))
-        table.insert(TycoonService.TycoonProviders, tycoonProvider)
+        TycoonService.TycoonProviders[tycoonClone.Name] = tycoonProvider
     end
 
     TriggerManager.getPrivateEvent("player_removed").Event:Connect(function(player:Player)

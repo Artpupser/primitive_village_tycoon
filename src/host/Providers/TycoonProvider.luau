@@ -23,7 +23,7 @@ end
 
 function TycoonProvider:unown(player: Player) : boolean
     if self:isOwner() and StateManager.get(player, "tycoon") == self.Id then
-        StateManager:set(player, "tycoon", nil)
+        StateManager.set(player, "tycoon", nil)
         TriggerManager.fireRemoteEvent("notification", player, "Player "..player.DisplayName..", unowner self tycoon!")
         TriggerManager.fireRemoteEvent("tycoon_unowner", player, self)
         self.Owner = nil

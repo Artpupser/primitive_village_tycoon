@@ -16,11 +16,11 @@ function Pessimistic.pcallAttemptsTimer(attempts: number, timer: number, action:
         if success then
             return value
         end
-        error("[Pessimistic.pcallAttempts] Bad operation, attempts remaning: "..attempts)
+        warn("[Pessimistic.pcallAttempts] Bad operation, attempts remaning: "..attempts)
         attempts = attempts - 1;
         task.wait(timer)
     end
-    error("[Pessimistic.pcallAttempts] [BAD] last operation...")
+    warn("[Pessimistic.pcallAttempts] [BAD] last operation...")
     if bad then
         print("[Pessimistic.pcallAttempts] Execute bad function")
         return bad()
@@ -35,10 +35,10 @@ function Pessimistic.pcallAttempts(attempts: number, action: () -> any, bad: () 
         if success then
             return value
         end
-        error("[Pessimistic.pcallAttempts] Bad operation, attempts remaning: "..attempts)
+        warn("[Pessimistic.pcallAttempts] Bad operation, attempts remaning: "..attempts)
         attempts = attempts - 1;
     end
-    error("[Pessimistic.pcallAttempts] [BAD] last operation...")
+    warn("[Pessimistic.pcallAttempts] [BAD] last operation...")
     if bad then
         print("[Pessimistic.pcallAttempts] Execute bad function")
         return bad()

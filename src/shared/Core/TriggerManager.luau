@@ -1,7 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local SimpleInstance = require(ReplicatedStorage.Shared.Utils.SimpleInstance)
-local Crypto = require(ReplicatedStorage.Shared.Utils.Crypto)
 local Players = game:GetService("Players")
 local TriggerManager = {}
 TriggerManager.__index = TriggerManager
@@ -12,8 +11,6 @@ TriggerManager.Folders = {}
 TriggerManager.Folders.Main = nil
 TriggerManager.Folders.Public = nil
 TriggerManager.Folders.Private = nil
-
-local TRIGGERS_NAME_LENGTH = 16
 
 TriggerManager.Triggers = {}
 TriggerManager.Triggers.Public = {}
@@ -48,21 +45,19 @@ end
 
 local function createRemote(id:string, className: string) : Instance
      if TriggerManager.isServer then
-        local name : string = Crypto.hash(id, TRIGGERS_NAME_LENGTH);
         local remote : RemoteEvent = SimpleInstance.new(className)
-            :rename(name):parent(TriggerManager.Folders.Public):build()
-        TriggerManager.Triggers.Public[name] = remote
+            :rename(id):parent(TriggerManager.Folders.Public):build()
+        TriggerManager.Triggers.Public[id] = remote
         return remote
     end
     warn("Client not can create public trigger")
 end
 
 local function getRemote(id:string) : Instance
-    local name = Crypto.hash(id, TRIGGERS_NAME_LENGTH)
     if TriggerManager.isServer then
-        return TriggerManager.Triggers.Public[name]
+        return TriggerManager.Triggers.Public[id]
     else
-        return TriggerManager.Folders.Public:FindFirstChild(name)
+        return TriggerManager.Folders.Public:FindFirstChild(id)
     end
 end
 
@@ -83,8 +78,7 @@ function TriggerManager.getRemoteFunction(id: string) : RemoteFunction
 end
 
 function TriggerManager.invokeRemoteFunction(id:string, ...)
-    local name : string = Crypto.hash(id, TRIGGERS_NAME_LENGTH)
-    local remoteFunction = TriggerManager.getRemoteFunction(name)
+    local remoteFunction = TriggerManager.getRemoteFunction(id)
     if TriggerManager.isServer then
         remoteFunction:InvokeClient(Players.LocalPlayer, ...)
     else
@@ -114,34 +108,30 @@ end
 -- private triggers
 
 function TriggerManager.createPrivateEvent(id: string) : BindableEvent
-    local name : string = Crypto.hash(id, TRIGGERS_NAME_LENGTH)
     local bindableEvent : BindableEvent = SimpleInstance.new("BindableEvent")
-        :rename(name)
+        :rename(id)
         :parent(TriggerManager.Folders.Private)
         :build()
-    TriggerManager.Triggers.Private[name] = bindableEvent
+    TriggerManager.Triggers.Private[id] = bindableEvent
     print("Created: "..id)
     return bindableEvent
 end
 
 function TriggerManager.getPrivateEvent(id: string) : BindableEvent
-    local name : string = Crypto.hash(id, TRIGGERS_NAME_LENGTH)
-    return TriggerManager.Triggers.Private[name];
+    return TriggerManager.Triggers.Private[id];
 end
 
 function TriggerManager.createPrivateFunction(id: string) : BindableFunction
-    local name : string = Crypto.hash(id, TRIGGERS_NAME_LENGTH)
     local bindableFunction : BindableFunction = SimpleInstance.new("BindableFunction")
-        :rename(name)
+        :rename(id)
         :parent(TriggerManager.Folders.Private)
         :build()
-    TriggerManager.Triggers.Private[name] = bindableFunction
+    TriggerManager.Triggers.Private[id] = bindableFunction
     return bindableFunction
 end
 
 function TriggerManager.getPrivateFunction(id: string) : BindableFunction
-    local name : string = Crypto.hash(id, TRIGGERS_NAME_LENGTH)
-    return TriggerManager.Triggers.Private[name];
+    return TriggerManager.Triggers.Private[id];
 end
 
 function TriggerManager.firePrivateEvent(id: string, ...)

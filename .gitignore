@@ -17,3 +17,5 @@ node_modules/
 AutoSaves/
 *.tmp
 *.bak
+
+combined.out

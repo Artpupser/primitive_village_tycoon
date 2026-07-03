@@ -42,7 +42,7 @@ local function createEmptySession(player: Player)
 end
 
 local function removeSession(player: Player)
-    table.remove(DataService.Sessions, player.UserId)
+    DataService.Sessions[player.UserId] = nil
 end
 
 local function saveData(player: Player) : boolean
