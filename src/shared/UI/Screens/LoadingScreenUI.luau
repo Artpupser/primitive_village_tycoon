@@ -1,9 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local TweenService = game:GetService("TweenService")
 local React = require(ReplicatedStorage.Packages.React)
-local DecorateUI = require(ReplicatedStorage.Shared.UI.Mini.DecorateUI)
 local LabelUI = require(ReplicatedStorage.Shared.UI.Mini.LabelUI)
---local ButtonUI = require(ReplicatedStorage.Shared.UI.Mini.ButtonUI)
 local TriggerManager = require(ReplicatedStorage.Shared.Core.TriggerManager)
 
 local function RootScreenUI(props)

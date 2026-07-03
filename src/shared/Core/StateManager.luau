@@ -1,46 +1,75 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local TriggerManager = require(ReplicatedStorage.Shared.Core.TriggerManager)
+
 local StateManager = {}
 StateManager.__index = StateManager
 StateManager.__className = "StateManager"
 
-function StateManager.new()
-    local self = setmetatable({}, StateManager)
-    self.states = table.create(0,{})
-    return self
-end
+local isServer = RunService:IsServer()
 
-function StateManager:setState(value: any, state: string)
-    self.states[value] = state
-end
+StateManager.Shared = {}
+StateManager.Local = {}
 
-function StateManager:tradeState(value: any, state: string) : string?
-    local cache = self:getState(value)
-    self:setState(value, state)
-    return cache
-end
 
-function StateManager:deleteState(value: any)
-   self:getStateCallback(value, function(_)
-        table.remove(self.states, value)
-   end)
-end
-
-function StateManager:getStateCallback(value: any, callback: (state:string) -> {})
-    local state = self.states[value]
-    if  state ~= nil then
-       callback(state)
+function StateManager.set(player:Player, id:string, value:any)
+    if isServer then
+        local state = StateManager.Shared[player]
+        if state then
+            state[id] = value
+        end
+    else
+        StateManager.Local[id] = value
     end
 end
 
-function StateManager:getState(value: any)
-    local state = self.states[value]
-    if  state ~= nil then
-       return state
+function StateManager.get(player:Player, id:string) : any
+    if isServer then
+        local state = StateManager.Shared[player]
+        if state then
+            return state[id]
+        end
+        return nil
+    else
+        return StateManager.Local[id]
+    end
+end
+
+function StateManager.getReadOnly(id:string) : any
+    if not isServer then
+        return StateManager.GetServerStateRemoteFunction:InvokeServer(id)
     end
     return nil
 end
 
-function StateManager:all()
-    return self.states
+function StateManager.create(player: Players)
+    if isServer then
+        StateManager.Shared[player] = {}
+    else
+        if StateManager.Local == nil then
+            StateManager.Local = {}
+        end
+    end
+end
+
+function StateManager.clear(player:Player)
+    if isServer then
+        StateManager.Shared[player] = nil
+    else
+        StateManager.Local = {}
+    end
+end
+
+function StateManager.init() 
+    if isServer then
+        TriggerManager.createRemoteFunction("get_server_state").OnServerInvoke = StateManager.get
+        StateManager.Shared = {}
+        StateManager.Local = nil
+    else
+        StateManager.GetServerStateRemoteFunction = TriggerManager.getRemoteFunction("get_server_state")
+        StateManager.Shared = nil
+        StateManager.Local = {}
+    end
 end
 
 return StateManager

@@ -1,27 +1,23 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DataStoreService = game:GetService("DataStoreService")
 local RunService = game:GetService("RunService")
+local ServerStorage = game:GetService("ServerStorage")
 local Pessimistic = require(ReplicatedStorage.Shared.Utils.Pessimistic)
 local Logical = require(ReplicatedStorage.Shared.Utils.Logical)
 local TriggerManager = require(ReplicatedStorage.Shared.Core.TriggerManager)
-local DATABASE_TYPE = RunService:IsStudio() and "testing" or "production"
+local DATABASE_MODE = RunService:IsStudio() and "testing" or "production"
 
 local Database : DataStore = Pessimistic.pcallAttempts(5, function()
-    return DataStoreService:GetDataStore(DATABASE_TYPE)
+    return DataStoreService:GetDataStore(DATABASE_MODE)
 end, function()
-    error("Database ["..DATABASE_TYPE.."] bad loaded, server shutdown")
+    error("Database ["..DATABASE_MODE.."] bad loaded, server shutdown")
     Pessimistic.kickAllPlayers()
 end)
-print("Database ["..DATABASE_TYPE.."] successfuly loaded!")
+print("Database ["..DATABASE_MODE.."] successfuly loaded!")
+
+local ServerTypes = require(ServerStorage.Host.ServerTypes) 
 
 local DataService = {}
-
-type PlayerData = {
-    Scores: {
-        Gold: number
-    },
-    Version: number
-}
 
 local CURRENT_DATA_SCHEME = {
     ["Scores"] = {
@@ -105,35 +101,32 @@ local function loadData(player: Player) : boolean
 end
 
 
-function DataService.set(player:Player, new: PlayerData)
+function DataService.set(player:Player, new: ServerTypes.PlayerData)
     if session(player) ~= nil then
         DataService.Sessions[player.UserId] = new
     end
 end
 
-function DataService.getRef(player:Player) : PlayerData
+function DataService.getRef(player:Player) : ServerTypes.PlayerData
     local playerSession = session(player);
     if playerSession ~= nil then
         return playerSession
     end
 end
 
-function DataService.getCopy(player:Player) : PlayerData
+function DataService.getCopy(player:Player) : ServerTypes.PlayerData
     local playerSession = session(player);
     if  playerSession ~= nil then
         return table.clone(playerSession)
     end
 end
 
--- local function change(player:Player, callback: (PlayerData) -> ())
---     if session(player) ~= nil then
---         callback(session)
---     end
--- end
-
 function DataService.init()
-    TriggerManager.createPrivateEvent("player_data_success_loaded")
+    TriggerManager.createPrivateFunction("player_data_get").OnInvoke = DataService.getRef
+    TriggerManager.createPrivateFunction("player_data_getCopy").OnInvoke = DataService.getCopy
+    TriggerManager.createPrivateFunction("player_data_set").OnInvoke = DataService.set
 
+    TriggerManager.createPrivateEvent("player_data_success_loaded")
     TriggerManager.getPrivateEvent("player_added").Event:Connect(function(player:Player)
         createEmptySession(player)
         if loadData(player) == false then

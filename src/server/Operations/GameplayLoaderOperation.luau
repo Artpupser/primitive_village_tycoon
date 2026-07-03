@@ -11,7 +11,7 @@ function GameplayLoaderOperation.start()
     TycoonService.init()
 
     TriggerManager.getPrivateEvent("player_data_success_loaded").Event:Connect(function(player: Player, data: PlayerData)
-        
+        print(data)
     end)
 end
 

@@ -6,6 +6,8 @@ local StarterGui = game:GetService("StarterGui")
 local Logical = require(ReplicatedStorage.Shared.Utils.Logical)
 local PlayerLoaderOperation = {}
 local SoundService = game:GetService("SoundService")
+local TriggerManager = require(ReplicatedStorage.Shared.Core.TriggerManager)
+
 PlayerLoaderOperation.__index = PlayerLoaderOperation
 PlayerLoaderOperation.__className = "PlayerLoaderOperation"
 
@@ -108,6 +110,21 @@ local function CharacterSetCustomSounds(humanoid: Humanoid)
     applyAudioConfiguration(AUDIO_DICTIONARY, AUDIO_DICTIONARY, humanoid.Parent:WaitForChild("HumanoidRootPart"))
 end
 
+local function CharacterSetTycoonRays(humanoid: Humanoid)
+    local myAttachemnt = humanoid.Parent:FindFirstChild("Attachment")
+    for _, v in TriggerManager.getRemoteFunction("tycoon_rays"):InvokeServer() do
+        if not v.Ownered then
+            v.Ray.Attachment1 = myAttachemnt
+        end
+    end
+end
+
+local function CharacterClearTycoonRays()
+    for _, v in TriggerManager.getRemoteFunction("tycoon_rays"):InvokeServer() do
+        v.Ray.Attachment1 = nil
+    end
+end
+
 local function RemoveNotUsedHUD()
     for i, v in pairs(HUD_PROPERTIES) do
         StarterGui:SetCoreGuiEnabled(i, v)
@@ -119,6 +136,15 @@ function PlayerLoaderOperation.start()
     Me.CharacterAdded:Connect(function(character: Model)
         local humanoid = character:WaitForChild("Humanoid")
         CharacterSetCustomSounds(humanoid)
+        CharacterSetTycoonRays(humanoid)
+    end)
+
+    TriggerManager.getRemoteEvent("tycoon_owner").OnClientEvent:Connect(function()
+        CharacterClearTycoonRays()
+    end)
+    
+    TriggerManager.getRemoteEvent("tycoon_unowner").OnClientEvent:Connect(function()
+        CharacterSetTycoonRays()
     end)
 
 end

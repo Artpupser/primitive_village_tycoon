@@ -1,15 +1,10 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local SoundService = game:GetService("SoundService")
 local Randomizer = require(ReplicatedStorage.Shared.Utils.Randomizer)
+local Types = require(ReplicatedStorage.Shared.Types)
 
-type AudioManagerType = {
-    Groups : { SoundGroup },
-    AudiosMap : { { Sound } },
-    AudiosList : { { Sound } },
-    Current : Sound?
-}
 
-local AudioManager : AudioManagerType = {
+local AudioManager : Types.AudioManagerType = {
     Groups = {
         Music = SoundService.Music,
         Sound = SoundService.Sound,
