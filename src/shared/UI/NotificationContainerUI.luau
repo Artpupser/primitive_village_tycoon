@@ -1,14 +1,15 @@
+local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage");
 local React = require(ReplicatedStorage.Packages.React)
 local LabelUI = require(ReplicatedStorage.Shared.UI.Mini.LabelUI)
-local UtilsUI = require(ReplicatedStorage.Shared.UI.Utils.UtilsUI)
+local UI = require(ReplicatedStorage.Shared.Utils.UI)
 local ButtonUI = require(ReplicatedStorage.Shared.UI.Mini.ButtonUI)
 local DecorateUI = require(ReplicatedStorage.Shared.UI.Mini.DecorateUI)
 local TriggerManager = require(ReplicatedStorage.Shared.Core.TriggerManager)
 local TweenService = game:GetService("TweenService")
 
 
-local NOTIFICATION_UI_LIFETIME : number = 10
+local NOTIFICATION_UI_LIFETIME : number = 5
 
 local function NotificationElementlUI(props:any)
     local item = props.item
@@ -20,11 +21,11 @@ local function NotificationElementlUI(props:any)
         return function()
             task.cancel(timer)
         end
-    end)
+    end, {item.id})
 
     local childrens = {
         DecorateUI(),
-        ButtonUI({value=item.message,click=UtilsUI.removeMeParent})
+        ButtonUI({value=item.message,click=UI.removeMeParent})
     }
 
     return React.createElement('Frame', {
@@ -39,7 +40,7 @@ local function NotificationContainerUI()
     React.useEffect(function()
         local connection = TriggerManager.getRemoteEvent("notification").OnClientEvent:Connect(function(message: string)
             setMessages(function(prev)
-                return UtilsUI.createChildren(prev, {message=message})
+                return UI.createChildren(prev, {message=message})
             end)
         end)
         
@@ -56,13 +57,13 @@ local function NotificationContainerUI()
         })
     }
 
-    for i, message in ipairs(messages) do
+    for _, message in ipairs(messages) do
         table.insert(childrens, React.createElement(NotificationElementlUI, {
-            key = "message_" .. i,
+            key = message.id,
             item = message,
             onRemove = function(id)
                 setMessages(function(prev)
-                    return UtilsUI.exceptHandler(prev, id)
+                    return UI.exceptHandler(prev, id)
                 end)
             end
         }))

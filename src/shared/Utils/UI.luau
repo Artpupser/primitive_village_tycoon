@@ -1,8 +1,9 @@
-local UtilsUI = {}
-UtilsUI.__className = "UtilsUI"
-UtilsUI.__index = UtilsUI
+local HttpService = game:GetService("HttpService")
+local UI = {}
+UI.__className = "UI"
+UI.__index = UI
 
- function UtilsUI.exceptHandler(list, id)
+ function UI.exceptHandler(list, id)
     local cache = {}
     for _, v in pairs(list) do
         if v.id == id then
@@ -13,10 +14,10 @@ UtilsUI.__index = UtilsUI
     return cache
 end
 
-function UtilsUI.createChildren(list, args) 
+function UI.createChildren(list, args) 
     local cache = table.clone(list)
     local put = {
-        id = tick(),
+        id = HttpService:GenerateGUID(false),
     }
     for i, v in pairs(args) do
         put[i] = v
@@ -25,14 +26,14 @@ function UtilsUI.createChildren(list, args)
     return cache
 end
 
-function UtilsUI.removeMeParent(v:GuiBase)
+function UI.removeMeParent(v:GuiBase)
     v.Parent:Destroy()
 end
 
-function UtilsUI.removeMe(v:GuiBase)
+function UI.removeMe(v:GuiBase)
     v:Destroy()
 end
 
 
 
-return UtilsUI
+return UI

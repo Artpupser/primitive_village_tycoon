@@ -7,6 +7,7 @@ local Logical = require(ReplicatedStorage.Shared.Utils.Logical)
 local PlayerLoaderOperation = {}
 local SoundService = game:GetService("SoundService")
 local TriggerManager = require(ReplicatedStorage.Shared.Core.TriggerManager)
+local StateManager = require(ReplicatedStorage.Shared.Core.StateManager)
 
 PlayerLoaderOperation.__index = PlayerLoaderOperation
 PlayerLoaderOperation.__className = "PlayerLoaderOperation"
@@ -111,10 +112,12 @@ local function CharacterSetCustomSounds(humanoid: Humanoid)
 end
 
 local function CharacterSetTycoonRays(humanoid: Humanoid)
-    local myAttachemnt = humanoid.Parent:FindFirstChild("Attachment")
-    for _, v in TriggerManager.getRemoteFunction("tycoon_rays"):InvokeServer() do
-        if not v.Ownered then
-            v.Ray.Attachment1 = myAttachemnt
+    if StateManager.get(Players.LocalPlayer, "owner") == nil or StateManager.get(Players.LocalPlayer, "owner") == false then
+        local attachment = humanoid.Parent:FindFirstChild("Attachment");
+        for _, v in TriggerManager.getRemoteFunction("tycoon_rays"):InvokeServer() do
+            if not v.Ownered then
+                v.Ray.Attachment1 = attachment
+            end
         end
     end
 end
@@ -140,11 +143,13 @@ function PlayerLoaderOperation.start()
     end)
 
     TriggerManager.getRemoteEvent("tycoon_owner").OnClientEvent:Connect(function()
+        StateManager.set(Players.LocalPlayer, "owner", true)
         CharacterClearTycoonRays()
     end)
-    
+
     TriggerManager.getRemoteEvent("tycoon_unowner").OnClientEvent:Connect(function()
-        CharacterSetTycoonRays()
+        StateManager.set(Players.LocalPlayer, "owner", false)
+        CharacterSetTycoonRays(Players.LocalPlayer.Character:WaitForChild("Humanoid"))
     end)
 
 end

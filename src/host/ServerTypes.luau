@@ -5,16 +5,18 @@ export type TycoonModel = {
     Decorations : Folder,
     NPC : Folder,
     Interact : Folder,
-    Enter : ProximityPrompt,
 }
 
 export type TycoonProvider = {
     Id : string,
+    Index : number,
     TycoonModel : TycoonModel,
     Owner: Player,
     isOwner: () -> boolean,
     own: (player: Player) -> boolean,
     unown: (player: Player) -> boolean,
+    start: () -> (),
+    clear: () -> (),
 }
 
 -- See DataService to change this type. IMPORTANT!

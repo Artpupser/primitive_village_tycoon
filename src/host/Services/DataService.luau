@@ -22,11 +22,9 @@ local DataService = {}
 local CURRENT_DATA_SCHEME = {
     ["Scores"] = {
         ["Gold"] = 0,
-        ["GEMS"] = 2,
     },
-    ["Version"] = 2,
+    ["Version"] = 0,
 }
-
 
 DataService.Sessions = {}
 
@@ -74,7 +72,6 @@ local function initData(player: Player) : boolean
     return saveData(player)
 end
 
-
 local function loadData(player: Player) : boolean
     local success, value = pcall(function()
         return Database:GetAsync(player.UserId)
@@ -100,6 +97,37 @@ local function loadData(player: Player) : boolean
     return false
 end
 
+-- local function clearData(player:Player) : boolean
+--     local success, _ = pcall(function()
+--         return Database:RemoveAsync(player.UserId)
+--     end)
+--     if success then
+--         TriggerManager.fireRemoteEvent("notification", player, "Your data successfuly cleared!")
+--         print("PlayerData ["..player.UserId.."] clear")
+--         return true
+--     end
+--     warn("PlayerData ["..player.UserId.."] bad clear")
+--     TriggerManager.fireRemoteEvent("notification", player, "Your data bad clear, retry")
+--     return false
+-- end
+
+local function clearAllData() : boolean
+    warn("Removing all data!!!")
+    
+    local success, _ = pcall(function()
+        for _, key in ipairs(Database:ListKeysAsync():GetCurrentPage()) do
+            Database:RemoveAsync(key.KeyName)
+            warn("Data number ["..key.KeyName.."] removed")
+        end
+    end)
+    if success then
+        print("All data successfuly removed.")
+        return true        
+    end
+    warn("All data bad removed")     
+    return false   
+end
+
 
 function DataService.set(player:Player, new: ServerTypes.PlayerData)
     if session(player) ~= nil then
@@ -107,23 +135,15 @@ function DataService.set(player:Player, new: ServerTypes.PlayerData)
     end
 end
 
-function DataService.getRef(player:Player) : ServerTypes.PlayerData
+function DataService.get(player:Player) : ServerTypes.PlayerData
     local playerSession = session(player);
     if playerSession ~= nil then
         return playerSession
     end
 end
 
-function DataService.getCopy(player:Player) : ServerTypes.PlayerData
-    local playerSession = session(player);
-    if  playerSession ~= nil then
-        return table.clone(playerSession)
-    end
-end
-
 function DataService.init()
-    TriggerManager.createPrivateFunction("player_data_get").OnInvoke = DataService.getRef
-    TriggerManager.createPrivateFunction("player_data_getCopy").OnInvoke = DataService.getCopy
+    TriggerManager.createPrivateFunction("player_data_get").OnInvoke = DataService.get
     TriggerManager.createPrivateFunction("player_data_set").OnInvoke = DataService.set
 
     TriggerManager.createPrivateEvent("player_data_success_loaded")
@@ -133,7 +153,7 @@ function DataService.init()
             player:Kick("Data bad loaded, try another enter to server")
             return
         end
-        TriggerManager.firePrivateEvent("player_data_success_loaded", player, DataService.getRef(player))
+        TriggerManager.firePrivateEvent("player_data_success_loaded", player, DataService.get(player))
     end)
     
     TriggerManager.getPrivateEvent("player_removed").Event:Connect(function(player:Player)

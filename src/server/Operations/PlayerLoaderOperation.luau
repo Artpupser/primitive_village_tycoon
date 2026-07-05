@@ -59,14 +59,6 @@ local function CharcaterPutToFolder(humanoid: Humanoid)
     humanoid.Parent.Parent = PlayerLoaderOperation.characterFolder
 end
 
-local function CharacterFreeze(humanoid: Humanoid)
-    humanoid.Parent:WaitForChild("HumanoidRootPart").Anchored = true
-end
-
-local function CharacterUnfreeze(humanoid: Humanoid)
-    humanoid.Parent:WaitForChild("HumanoidRootPart").Anchored = false
-end
-
 local function CharacterModifyBodyParts(humanoid: Humanoid)
     local root:Part = humanoid.Parent:WaitForChild("HumanoidRootPart");
     local touchPart:Part = SimpleInstance.new("Part")
@@ -97,7 +89,6 @@ function PlayerLoaderOperation.start()
     TriggerManager.createPrivateEvent("player_added")
     TriggerManager.createPrivateEvent("player_removed")
     TriggerManager.createRemoteEvent("player_complete_loading").OnServerEvent:Connect(function(player:Player)
-        CharacterUnfreeze(player.Character:WaitForChild("Humanoid"))
         TriggerManager.fireRemoteEvent("notification", player, "Player: "..tostring(player.UserId).." loaded!")
     end)
 
@@ -116,7 +107,6 @@ function PlayerLoaderOperation.start()
             BasicHumanoidConfiguration(humanoid)
             CharcaterPutToFolder(humanoid)
             CharacterModifyBodyParts(humanoid)
-            CharacterFreeze(humanoid)
         end)
     end)
 

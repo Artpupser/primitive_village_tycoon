@@ -8,6 +8,7 @@ local TycoonProvider = require(ServerStorage.Host.Providers.TycoonProvider)
 local ServerTypes = require(ServerStorage.Host.ServerTypes)
 local StateManager = require(ReplicatedStorage.Shared.Core.StateManager)
 local TriggerManager = require(ReplicatedStorage.Shared.Core.TriggerManager)
+local TycoonConfig = require(ServerStorage.Host.Configs.TycoonConfig)
 
 
 local TycoonService : ServerTypes.TycoonService = {
@@ -16,9 +17,6 @@ local TycoonService : ServerTypes.TycoonService = {
 } 
 TycoonService.__index = TycoonService
 TycoonService.__className = "TycoonService"
-
-local TYCOON_PREFAB : Model = ServerStorage.Prefabs.TycoonPrefab
-local AMOUNT = 4
 
 function TycoonService.getRays()
     local attachments = {}
@@ -35,20 +33,7 @@ function TycoonService.init()
     TriggerManager.createRemoteFunction("tycoon_rays").OnServerInvoke = TycoonService.getRays
     TriggerManager.createRemoteEvent("tycoon_owner")
     TriggerManager.createRemoteEvent("tycoon_unowner")
-
-    TycoonService.Folder = SimpleInstance.new("Folder"):rename("Tycoons"):parent(workspace):build()
-    for i = AMOUNT, 1, -1 do
-        local tycoonClone : Model = TYCOON_PREFAB:Clone();
-        tycoonClone.Parent = TycoonService.Folder
-        tycoonClone.Name = "Tycoon "..i
-        local rotate = 2*math.pi/AMOUNT*(i-1)
-        tycoonClone.WorldPivot = CFrame.new(0,20,50)
-        tycoonClone:PivotTo(tycoonClone.WorldPivot * CFrame.new(0,0,-tycoonClone.WorldPivot.Z))
-        tycoonClone:PivotTo(tycoonClone.WorldPivot * CFrame.fromEulerAnglesXYZ(0,rotate,0))
-        local tycoonProvider = TycoonProvider.new(TycoonModel.new(tycoonClone))
-        TycoonService.TycoonProviders[tycoonClone.Name] = tycoonProvider
-    end
-
+    
     TriggerManager.getPrivateEvent("player_removed").Event:Connect(function(player:Player)
         local tycoonId = StateManager.get(player, "tycoon")
         if tycoonId ~= nil and TycoonService.TycoonProviders[tycoonId] ~= nil then
@@ -56,6 +41,12 @@ function TycoonService.init()
             tycoonProvider:unown(player)
         end
     end)
+
+    for i = TycoonConfig.Amount, 1, -1 do
+        local tycoonProvider = TycoonProvider.new(i)
+        tycoonProvider:start()
+        TycoonService.TycoonProviders[tycoonProvider.Index] = tycoonProvider
+    end
 end
 
 return TycoonService
