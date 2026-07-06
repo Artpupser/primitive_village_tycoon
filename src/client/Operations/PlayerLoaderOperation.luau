@@ -107,11 +107,11 @@ local function applyAudioConfiguration(initValue, value, target: Instance)
     end
 end
 
-local function CharacterSetCustomSounds(humanoid: Humanoid)
+local function characterSetCustomSounds(humanoid: Humanoid)
     applyAudioConfiguration(AUDIO_DICTIONARY, AUDIO_DICTIONARY, humanoid.Parent:WaitForChild("HumanoidRootPart"))
 end
 
-local function CharacterSetTycoonRays(humanoid: Humanoid)
+local function characterSetTycoonRays(humanoid: Humanoid)
     if StateManager.get(Players.LocalPlayer, "owner") == nil or StateManager.get(Players.LocalPlayer, "owner") == false then
         local attachment = humanoid.Parent:FindFirstChild("Attachment");
         for _, v in TriggerManager.getRemoteFunction("tycoon_rays"):InvokeServer() do
@@ -122,34 +122,34 @@ local function CharacterSetTycoonRays(humanoid: Humanoid)
     end
 end
 
-local function CharacterClearTycoonRays()
+local function characterClearTycoonRays()
     for _, v in TriggerManager.getRemoteFunction("tycoon_rays"):InvokeServer() do
         v.Ray.Attachment1 = nil
     end
 end
 
-local function RemoveNotUsedHUD()
+local function removeNotUsedHUD()
     for i, v in pairs(HUD_PROPERTIES) do
         StarterGui:SetCoreGuiEnabled(i, v)
     end
 end
 
 function PlayerLoaderOperation.start()
-    RemoveNotUsedHUD()
+    removeNotUsedHUD()
     Me.CharacterAdded:Connect(function(character: Model)
         local humanoid = character:WaitForChild("Humanoid")
-        CharacterSetCustomSounds(humanoid)
-        CharacterSetTycoonRays(humanoid)
+        characterSetCustomSounds(humanoid)
+        characterSetTycoonRays(humanoid)
     end)
 
     TriggerManager.getRemoteEvent("tycoon_owner").OnClientEvent:Connect(function()
         StateManager.set(Players.LocalPlayer, "owner", true)
-        CharacterClearTycoonRays()
+        characterClearTycoonRays()
     end)
 
     TriggerManager.getRemoteEvent("tycoon_unowner").OnClientEvent:Connect(function()
         StateManager.set(Players.LocalPlayer, "owner", false)
-        CharacterSetTycoonRays(Players.LocalPlayer.Character:WaitForChild("Humanoid"))
+        characterSetTycoonRays(Players.LocalPlayer.Character:WaitForChild("Humanoid"))
     end)
 
 end

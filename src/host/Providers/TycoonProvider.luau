@@ -3,7 +3,6 @@ local ServerStorage = game:GetService("ServerStorage")
 local ServerTypes = require(ServerStorage.Host.ServerTypes)
 local TycoonModel = require(ServerStorage.Host.Models.TycoonModel)
 local TycoonConfig = require(ServerStorage.Host.Configs.TycoonConfig)
-local Types = require(ReplicatedStorage.Shared.Types)
 local TriggerManager = require(ReplicatedStorage.Shared.Core.TriggerManager)
 local StateManager = require(ReplicatedStorage.Shared.Core.StateManager)
 
@@ -28,7 +27,6 @@ function TycoonProvider:unown(player: Player) : boolean
         task.spawn(function()
             self:start()
         end)
-        -- self.TycoonModel.Instance.Enter.Trigger.ProximityPrompt.Enabled = true
         return true
     end
     TriggerManager.fireRemoteEvent("notification", player, "You need to owner any tycoon")
@@ -40,17 +38,20 @@ function TycoonProvider:own(player: Player) : boolean
         StateManager.set(player, "tycoon", self.Id)
         TriggerManager.fireRemoteEvent("notification", player, "Player "..player.DisplayName..", is owner!")
         TriggerManager.fireRemoteEvent("tycoon_owner", player, self)
-        -- self.TycoonModel.Instance.Enter.Trigger.ProximityPrompt.Enabled = false
         self.Owner = player
-        return true
+        return self:load(player) 
     end
     TriggerManager.fireRemoteEvent("notification", player, self.Id.." is owned, or you already owner")
     return false
 end
 
 
-function TycoonProvider:load(player:Player)
-    
+function TycoonProvider:load() : boolean
+    if self.Owner ~= nil then
+        self.TycoonModel.Instance.Enter.StarterCharacter:Destroy()
+        self.TycoonModel.Instance.Enter.Trigger.ProximityPrompt.Enabled = false
+    end
+    return false
 end
 
 function TycoonProvider:start()

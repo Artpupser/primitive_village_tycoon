@@ -6,7 +6,7 @@ UILoaderOperation.__index = UILoaderOperation
 UILoaderOperation.__className = UILoaderOperation
 
 function UILoaderOperation:start()
-    MountUI("Root")
+    MountUI("root")
 end
 
 return UILoaderOperation

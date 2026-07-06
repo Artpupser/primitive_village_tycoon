@@ -4,15 +4,20 @@ local React = require(ReplicatedStorage.Packages.React)
 local LabelUI = require(ReplicatedStorage.Shared.UI.Mini.LabelUI)
 local TriggerManager = require(ReplicatedStorage.Shared.Core.TriggerManager)
 
-local function RootScreenUI(props)
+local function LoadingScreenUI(props)
    local progress, setProgress = React.useState(0)
+   local message, setMessage = React.useState("")
    local frameRef = React.useRef(nil)
    React.useEffect(function()
-      local connection = TriggerManager.getPrivateEvent("loading_progress").Event:Connect(function(newProgress: number)
+      local connection = TriggerManager.getPrivateEvent("loading_status").Event:Connect(function(_message: string, _progress: number)
          setProgress(function(_: number)
-            return newProgress
+            return _progress
          end)
-         if newProgress >= 1 then
+
+         setMessage(function(_: number)
+            return _message
+         end)
+         if _progress >= 1 then
             task.delay(1, function()
                local frame = frameRef.current
                local animation = TweenService:Create(frame, TweenInfo.new(.8,
@@ -31,7 +36,16 @@ local function RootScreenUI(props)
    end, { props.onComplete })
 
    local childrens = {
-      LabelUI({value = "Progress: "..string.format("%.2f", progress*100).."%"})
+      LabelUI({
+         value = "Progress: "..string.format("%.2f", progress*100).."%",
+         size = UDim2.fromScale(1,.5),
+         position = UDim2.fromScale(.5,.49),
+      }),
+      LabelUI({
+         value = message, 
+         size = UDim2.fromScale(.6, .1),
+         position = UDim2.fromScale(.5,.6),
+      })
    }
 
    return React.createElement("Frame", {
@@ -45,4 +59,4 @@ local function RootScreenUI(props)
    }, childrens)
 end
 
-return RootScreenUI
+return LoadingScreenUI

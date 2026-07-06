@@ -2,8 +2,25 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local React = require(ReplicatedStorage.Packages.React)
 local ReactRoblox = require(ReplicatedStorage.Packages.ReactRoblox)
---local RooutUI = require(ReplicatedStorage.Shared.UI.RootUI)
 local Screens = ReplicatedStorage.Shared.UI.Screens
+
+local MountMap = {
+    ["loading"] = function(root: ReactRoblox.RootType, container: ScreenGui)
+        container.DisplayOrder = 10
+        return React.createElement(require(Screens.LoadingScreenUI), {
+            onComplete = function()
+                root:unmount()
+                container:Destroy()
+            end
+        })
+    end,
+
+    ["root"] = function(_: ReactRoblox.RootType, _: ScreenGui)
+        return React.createElement(require(Screens.RootScreenUI), {
+
+        })
+    end
+}
 
 local function MountUI(screen: string)
     local player = Players.LocalPlayer
@@ -16,13 +33,7 @@ local function MountUI(screen: string)
     container.ClipToDeviceSafeArea = false
     container.Parent = playerGui
     local root = ReactRoblox.createRoot(container)
-    local app = React.createElement(require(Screens:WaitForChild(screen.."ScreenUI")), {
-        onComplete = function()
-            root:unmount()
-            container:Destroy()
-        end
-    }) 
-    root:render(app)
+    root:render(MountMap[screen](root, container))
 end
 
 return MountUI

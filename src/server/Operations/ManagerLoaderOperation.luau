@@ -2,13 +2,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TriggerManager = require(ReplicatedStorage.Shared.Core.TriggerManager)
 local StateManager = require(ReplicatedStorage.Shared.Core.StateManager)
 
-local TriggerLoaderOperation = {}
-TriggerLoaderOperation.__index = TriggerLoaderOperation
-TriggerLoaderOperation.__className = "TriggerLoaderOperation"
+local ManagerLoaderOperation = {}
+ManagerLoaderOperation.__index = ManagerLoaderOperation
+ManagerLoaderOperation.__className = "ManagerLoaderOperation"
 
-function TriggerLoaderOperation.start()
+function ManagerLoaderOperation.start()
     TriggerManager.init()
     StateManager.init()
 end
-
-return TriggerLoaderOperation
+return ManagerLoaderOperation

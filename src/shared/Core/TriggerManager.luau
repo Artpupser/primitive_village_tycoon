@@ -1,63 +1,106 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local SimpleInstance = require(ReplicatedStorage.Shared.Utils.SimpleInstance)
 local Players = game:GetService("Players")
-local TriggerManager = {}
+local ServerStorage = game:GetService("ServerStorage")
+local Me = Players.LocalPlayer
+local SimpleInstance = require(ReplicatedStorage.Shared.Utils.SimpleInstance)
+local isServer = RunService:IsServer()
+
+local TriggerManager : {
+    Folders : {
+        Replicated : Folder,
+        Server: Folder,
+        Client: Folder,
+    },
+    Triggers: {
+        Public: { RemoteFunction|RemoteEvent } ,
+        Unreliable: { UnreliableRemoteEvent } ,
+        Private:  { BindableFunction|BindableEvent }
+    }
+} = {}
 TriggerManager.__index = TriggerManager
 TriggerManager.__className = "EventManager"
 
-TriggerManager.isServer = RunService:IsServer()
-TriggerManager.Folders = {}
-TriggerManager.Folders.Main = nil
-TriggerManager.Folders.Public = nil
-TriggerManager.Folders.Private = nil
-
-TriggerManager.Triggers = {}
-TriggerManager.Triggers.Public = {}
-TriggerManager.Triggers.Private = {}
-
 function TriggerManager.init()
-    print("Event manager initializing...")
-    if TriggerManager.isServer then
-        TriggerManager.Folders.Main = SimpleInstance.new("Folder")
+    TriggerManager.Folders = {}
+    TriggerManager.Folders.Replicated = nil
+    TriggerManager.Folders.Unreliable = nil
+    TriggerManager.Folders.Server = nil
+    TriggerManager.Folders.Client = nil
+    TriggerManager.Triggers = {}
+    TriggerManager.Triggers.Private = {}
+    if isServer then
+        TriggerManager.Triggers.Public = {}
+        TriggerManager.Triggers.Unreliable = {}
+        TriggerManager.Folders.Replicated = SimpleInstance.new("Folder")
             :rename("Triggers")
             :parent(ReplicatedStorage)
             :build()
-        TriggerManager.Folders.Public = SimpleInstance.new("Folder")
-            :rename("Public")
-            :parent(TriggerManager.Folders.Main)
+        TriggerManager.Folders.Unreliable = SimpleInstance.new("Folder")
+            :rename("Unreliable")
+            :parent(TriggerManager.Folders.Replicated)
             :build()
-        TriggerManager.Folders.Private = SimpleInstance.new("Folder")
-            :rename("Private")
-            :parent(TriggerManager.Folders.Main)
+        TriggerManager.Folders.Server = SimpleInstance.new("Folder")
+            :rename("Triggers")
+            :parent(ServerStorage)
             :build()
     else
-        TriggerManager.Folders.Main = ReplicatedStorage:WaitForChild("Triggers")
-        TriggerManager.Folders.Public = TriggerManager.Folders.Main:WaitForChild("Public")
-        TriggerManager.Folders.Private = TriggerManager.Folders.Main:WaitForChild("Private")
+        TriggerManager.Folders.Client = SimpleInstance.new("Folder")
+            :rename("Triggers")
+            :parent(Me.PlayerScripts)
+            :build()
+        TriggerManager.Folders.Replicated = ReplicatedStorage:WaitForChild("Triggers")
+        TriggerManager.Folders.Unreliable = TriggerManager.Folders.Replicated:WaitForChild("Unreliable")
+        print("Find: ", TriggerManager.Folders.Client)
     end
-    if TriggerManager.Folders.Main == nil then
-        error("Triggers folder not undfined.")
+    if TriggerManager.Folders.Replicated == nil then
+        error("ReplicatedTriggers folder not undfined.")
+    end
+end
+
+-- unreliable public events
+
+function TriggerManager.createUnreliableEvent(id:string) : UnreliableRemoteEvent
+       if isServer then
+        local trigger : UnreliableRemoteEvent = SimpleInstance.new("UnreliableRemoteEvent")
+            :rename(id)
+            :parent(TriggerManager.Folders.Unreliable)
+            :build()
+        TriggerManager.Triggers.Public[id] = trigger
+        print("<UnreliableRemoteEvent> created: "..id)
+        return trigger
+    end
+    warn("Client not can create unreliable remote event")
+end
+
+function TriggerManager.getUnreliableEvent(id:string) : UnreliableRemoteEvent
+    if isServer then
+        return TriggerManager.Triggers.Unreliable[id]
+    else
+        return TriggerManager.Folders.Unreliable:FindFirstChild(id)
     end
 end
 
 -- public triggers
 
-local function createRemote(id:string, className: string) : Instance
-     if TriggerManager.isServer then
-        local remote : RemoteEvent = SimpleInstance.new(className)
-            :rename(id):parent(TriggerManager.Folders.Public):build()
-        TriggerManager.Triggers.Public[id] = remote
-        return remote
+local function createRemote(id:string, className: string) : RemoteEvent|RemoteFunction
+    if isServer then
+        local trigger : RemoteEvent|RemoteFunction = SimpleInstance.new(className)
+            :rename(id)
+            :parent(TriggerManager.Folders.Replicated)
+            :build()
+        TriggerManager.Triggers.Public[id] = trigger
+        print("<"..className.."> created: "..id)
+        return trigger
     end
-    warn("Client not can create public trigger")
+    warn("Client not can create remote trigger")
 end
 
-local function getRemote(id:string) : Instance
-    if TriggerManager.isServer then
+local function getRemote(id:string) : RemoteEvent|RemoteFunction
+    if isServer then
         return TriggerManager.Triggers.Public[id]
     else
-        return TriggerManager.Folders.Public:FindFirstChild(id)
+        return TriggerManager.Folders.Replicated:FindFirstChild(id)
     end
 end
 
@@ -79,17 +122,16 @@ end
 
 function TriggerManager.invokeRemoteFunction(id:string, ...)
     local remoteFunction = TriggerManager.getRemoteFunction(id)
-    if TriggerManager.isServer then
+    if isServer then
         remoteFunction:InvokeClient(Players.LocalPlayer, ...)
     else
         remoteFunction:InvokeServer(...)
     end
 end
 
-
 function TriggerManager.fireRemoteEvent(id:string, player:Player?, ...)
     local remoteEvent = TriggerManager.getRemoteEvent(id)
-    if TriggerManager.isServer then
+    if isServer then
         remoteEvent:FireClient(player, ...)
     else
         remoteEvent:FireServer(...)
@@ -98,7 +140,7 @@ end
 
 function TriggerManager.fireAllClientsEvent(id:string, ...)
     local remoteEvent = TriggerManager.getRemoteEvent(id)
-    if TriggerManager.isServer then
+    if isServer then
         remoteEvent:FireAllClients(...)
         return
     end
@@ -107,31 +149,34 @@ end
 
 -- private triggers
 
-function TriggerManager.createPrivateEvent(id: string) : BindableEvent
-    local bindableEvent : BindableEvent = SimpleInstance.new("BindableEvent")
+function TriggerManager.createPrivate(id:string, className:string) : Instance
+    local trigger : BindableEvent|BindableFunction = SimpleInstance.new(className)
         :rename(id)
-        :parent(TriggerManager.Folders.Private)
+        :parent(if isServer then TriggerManager.Folders.Server else TriggerManager.Folders.Client)
         :build()
-    TriggerManager.Triggers.Private[id] = bindableEvent
-    print("Created: "..id)
-    return bindableEvent
+    TriggerManager.Triggers.Private[id] = trigger
+    print("<"..className.."> created: "..id)
+    return trigger
+end
+
+function TriggerManager.getPrivate(id:string):Instance
+    return TriggerManager.Triggers.Private[id];
+end
+
+function TriggerManager.createPrivateEvent(id: string) : BindableEvent
+    return TriggerManager.createPrivate(id, "BindableEvent")
 end
 
 function TriggerManager.getPrivateEvent(id: string) : BindableEvent
-    return TriggerManager.Triggers.Private[id];
+    return TriggerManager.getPrivate(id);
 end
 
 function TriggerManager.createPrivateFunction(id: string) : BindableFunction
-    local bindableFunction : BindableFunction = SimpleInstance.new("BindableFunction")
-        :rename(id)
-        :parent(TriggerManager.Folders.Private)
-        :build()
-    TriggerManager.Triggers.Private[id] = bindableFunction
-    return bindableFunction
+return TriggerManager.createPrivate(id, "BindableFunction")
 end
 
 function TriggerManager.getPrivateFunction(id: string) : BindableFunction
-    return TriggerManager.Triggers.Private[id];
+    return TriggerManager.getPrivate(id);
 end
 
 function TriggerManager.firePrivateEvent(id: string, ...)

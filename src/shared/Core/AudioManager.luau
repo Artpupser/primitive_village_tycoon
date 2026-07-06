@@ -20,7 +20,7 @@ end
 
 function AudioManager.init()
     for groupName : string, group : SoundGroup in pairs(AudioManager.Groups) do
-        print("Sound group "..groupName)
+        print("<<"..groupName..">>")
         AudioManager.AudiosList[groupName] = table.create(0, {})
         AudioManager.AudiosMap[groupName] = table.create(0, {})
         for soundIndex, sound : Sound in pairs(group:GetChildren()) do

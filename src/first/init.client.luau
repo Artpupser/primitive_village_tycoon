@@ -1,20 +1,25 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Shared = ReplicatedStorage:WaitForChild("Shared");
-local TriggerManager = require(Shared.Core.TriggerManager)
-TriggerManager.createPrivateEvent("loading_progress")
-local MountUI = require(Shared.UI.MountUI)
-MountUI("Loading")
+local SimpleInstance = require(ReplicatedStorage:WaitForChild("Shared").Utils.SimpleInstance)
 local Me = Players.LocalPlayer
-local ContentProvider = game:GetService("ContentProvider")
 
-local assets = game:GetChildren();
-local amountAssets = #assets;
-for i, v in pairs(assets) do
-    ContentProvider:PreloadAsync({v})
-    TriggerManager.firePrivateEvent("loading_progress", i/amountAssets)
-    --print(amountAssets/i)
-    task.wait(0.01)
-end
 
-TriggerManager.fireRemoteEvent("player_complete_loading", Me)
+local blackScreen :StarterGui = SimpleInstance.new("ScreenGui") 
+    :rename("BlackScreen")
+    :parent(Me.PlayerGui)
+    :build()
+
+blackScreen.IgnoreGuiInset = true
+blackScreen.ResetOnSpawn = false
+blackScreen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+blackScreen.ClipToDeviceSafeArea = false
+blackScreen.DisplayOrder = 99
+
+local black:Frame = SimpleInstance.new("Frame")
+    :rename("Black")
+    :parent(blackScreen)
+    :build()
+
+black.Size = UDim2.fromScale(1,1)
+black.BackgroundColor3 = Color3.fromRGB(0,0,0)
+

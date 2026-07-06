@@ -76,17 +76,6 @@ local function NotificationContainerUI()
         BackgroundColor3 = Color3.fromRGB(255,255,255),
         BackgroundTransparency = 1,
         key = "NotificationContainer",
-        -- [React.Event.MouseEnter] = function(me)
-        --     TweenService:Create(me, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {
-        --        Size = UDim2.fromScale(0.3, 0.8),
-        --     }):Play()
-        --  end,
-
-        --  [React.Event.MouseLeave] = function(me)
-        --     TweenService:Create(me, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {
-        --        Size = UDim2.fromScale(0.2, 0.8),
-        --     }):Play()
-        --  end,
     }, childrens)
 end
 

@@ -2,14 +2,14 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local React = require(ReplicatedStorage.Packages.React)
 local DecorateUI = require(ReplicatedStorage.Shared.UI.Mini.DecorateUI)
 
-local function LabelUI(props: {value: string}) 
+local function LabelUI(props: {value: string, size: UDim2, position: UDim2}) 
     local childrens = {
         DecorateUI()
     }
     return React.createElement("TextLabel", {
         Text = props.value,
-        Size = UDim2.fromScale(1,1),
-        Position = UDim2.fromScale(.5,.5),
+        Size = props.size,
+        Position = props.position,
         AnchorPoint = Vector2.new(.5,.5),
         TextXAlignment = "Center",
         TextYAlignment = "Center",

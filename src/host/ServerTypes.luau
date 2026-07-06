@@ -5,6 +5,7 @@ export type TycoonModel = {
     Decorations : Folder,
     NPC : Folder,
     Interact : Folder,
+    destroy: () -> (),
 }
 
 export type TycoonProvider = {

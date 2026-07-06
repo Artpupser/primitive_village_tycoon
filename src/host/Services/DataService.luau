@@ -97,19 +97,19 @@ local function loadData(player: Player) : boolean
     return false
 end
 
--- local function clearData(player:Player) : boolean
---     local success, _ = pcall(function()
---         return Database:RemoveAsync(player.UserId)
---     end)
---     if success then
---         TriggerManager.fireRemoteEvent("notification", player, "Your data successfuly cleared!")
---         print("PlayerData ["..player.UserId.."] clear")
---         return true
---     end
---     warn("PlayerData ["..player.UserId.."] bad clear")
---     TriggerManager.fireRemoteEvent("notification", player, "Your data bad clear, retry")
---     return false
--- end
+local function clearData(player:Player) : boolean
+    local success, _ = pcall(function()
+        return Database:RemoveAsync(player.UserId)
+    end)
+    if success then
+        TriggerManager.fireRemoteEvent("notification", player, "Your data successfuly cleared!")
+        print("PlayerData ["..player.UserId.."] clear")
+        return true
+    end
+    warn("PlayerData ["..player.UserId.."] bad clear")
+    TriggerManager.fireRemoteEvent("notification", player, "Your data bad clear, retry")
+    return false
+end
 
 local function clearAllData() : boolean
     warn("Removing all data!!!")

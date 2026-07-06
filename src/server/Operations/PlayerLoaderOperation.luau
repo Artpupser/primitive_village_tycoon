@@ -86,6 +86,7 @@ end
 
 function PlayerLoaderOperation.start()
     PlayerLoaderOperation.characterFolder = SimpleInstance.new("Folder"):rename(CHARACTER_FOLDER_NAME):parent(workspace):build()
+    TriggerManager.createRemoteEvent("notification")
     TriggerManager.createPrivateEvent("player_added")
     TriggerManager.createPrivateEvent("player_removed")
     TriggerManager.createRemoteEvent("player_complete_loading").OnServerEvent:Connect(function(player:Player)
